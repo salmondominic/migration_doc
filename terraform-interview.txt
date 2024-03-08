@@ -1,0 +1,576 @@
+What is terraform ?
+	It is a infra building tool
+	IAAC tool
+	
+Have you used cloudformation ?
+
+Diff between cloudformation and terraform ?
+	cloudformation is aws only infrastructure building tool
+	terraform supports many cloud infrastructure
+	
+terraform whcih company developed ?
+	hashicorp
+	any other tools used of hashicorp ?
+		packer to build AMIs
+	
+which language 
+	hcl - simliar to json
+	hcl - hashicorp configuration language
+
+which file first get executed in terraform ?
+	when we execute terraform, it first create a dependency tree based on the resource definitions and create resources
+	we also can give depends_on in resource configuration to create a particular resource after another resource
+	
+terraform does not create resources one by one. 
+many resources are . created parallely
+When depends_on mentioned, terraform create depends_on resource first and then the defined resource
+
+where do you keep tf variables?
+	anywhere we can define variables
+	we generally keep in variables.tf
+	variables define in variables.tf and values mention in tfvars file like dev.tfvars or prod.tfvars
+	so that multiple environment infra can be created with the values of dev.tfvars or prod.vars
+	
+	auto.tfvars
+	dev.tfvars
+	prod.tfvars
+	
+	
+$ cat variables.tf
+variable "instance_type" {}
+
+vi prod.tfvars
+instance_type = "t2.micro"
+project-environment = "prod"
+
+vi dev.tfvars
+instance_type = "t2.small"
+project-environment = "dev"
+
+terraform apply -var="env=prod"
+
+terraform apply -var-file=prod.tfvars
+
+tfvars automatically will load ?
+	it depends on the name of varfile
+	terraform.tfvars - automatically load
+	*.auto.tfvars - automtically load 
+	
+How do you write variables ?
+	variables block will open
+	Type of variable like string, list, list of strings, list of numbers etc. default string - optional	type= list[number]
+	description - optional
+	default = 
+	list[1,2,3,a]
+	If default value not mentioned, while executing apply, it ask for the variable value
+
+
+how do you set a variable which can accept only "dev" and "prod" values?
+	
+	we can write condition along with variables
+	validation block inside variable block
+		variable {
+		default =
+			validation {
+			condition = var.environment == "dev" or "prod"
+			error_message = 
+			}		
+		}
+		
+any other type variables used ?
+	map
+	list
+	
+	tell the example of map :
+		ami as map
+			ap-south-1 : ami_xxxx,
+			us-east-1 : ami_yyyy,
+		otherwise we need to define 3 different variables
+
+	have you written as list ?
+		security group name giving as list
+		
+where do you refer while writing resources ?
+	we refer hashicorp documentation
+	
+
+you have made some changes in the code ? How will you see which modification the code is going to bring ?
+		terraform plan - help us to see wat the code is going to do
+		destroy - field we will note specifically
+		
+terraform related cmds wat have you used ?
+	plan
+	validate
+	fmt
+	init
+	output 
+	state show
+	taint
+	untaint
+	destroy
+	
+how do you create an instance multiple times ?
+	2 ways 
+	1. 4 - resource blocks
+	2. using count 
+	
+	if the isntances created using count and the instance ids has to be passed to anothe rresource, how do you do that ?
+		using splate expression, we can pass the instance id like aws_instance.webservers[*].instance_id
+	
+
+Once an instance or alb is created, how do you get the instance public ip, alb dns, alb arn ?
+	using terraform output block, we can specify the field to display 
+		output "web_public_ip" {
+		value = aws_instance.webserver.public_ip
+		}
+	or terraform state show resourcename - list the details of the resources
+
+how do you manage state file ?
+	If i am only managing, local statefile
+	we 2 or 3 persons manage infra, so we keep in s3
+		backend s3 
+	have u used any other backends?
+		no
+	how do you define the backend configuration ? do it
+	
+When a team is managing infra, how do you share the terraform code ?
+	statefile - s3
+	when one person doing changes, what if another person do change - how do you change 
+		terraform dynamodb statelocking
+		
+	1.instance, securitu gtoup creation, plan, apply statefile s3
+	terraform lock file - set to dynamodb
+	2. same infra code addition to another instance, terraform plan
+		terraform plan - first instance - not possible - so terraform will tell another person is doing the changes
+		
+what other providers used ?
+aws
+null provider
+tls provier
+
+
+have you used nullresource ?
+	tell eg: we have an instance, its public IP write to a file 
+nullresource will execute always ?
+	no it depends on the trigger condition. 
+	can also configure always condition for trigger
+	when there is a change in resource, nullresource block would be executed depends on trigger field
+	https://www.bitslovers.com/terraform-null-resource/
+
+Is there is any other way other than nullresource to write public ip in a file ?
+	using localexec we can do 
+
+Have you used provisioners ?
+	first scaneria, we can use localexec 
+	s3 bucket creation with static website hosting. once resource is created, writing its dns into a file using localexec or nullresource - do it
+
+what local exec does ?
+	during a resource creation, if we need to run/execute something in the local we use local exec provisioners
+	resource "aws_instance" "webserver" {
+
+	ami = "ami-057752b3f1d6c4d6c"
+	instance_type = "t2.micro"
+	key_name = "devops"
+		
+	vpc_security_group_ids	 = [ "sg-08975e79d993d9292" ]
+ 	tags = {	
+	"Name" = "zomato-webserver",
+	"Project" = "zomato",
+	"Environment" = "dev"
+		}
+    provisioner "local-exec" {
+    command = "echo ${self.private_ip} >> /tmp/private_ips.txt"
+  }
+  provisioner "local-exec" {
+    command = "echo ${self.public_ip} >> /tmp/public_ips.txt"
+  }
+	}
+	
+What other provisioners you have used >
+	file provisioner
+		file copy into the resource created if required 
+	local exec
+	remote exec 
+		remote server need to execute script. 
+		we mosly use user_data script as it is provided by aws
+
+what blocks are available in terraform ?
+	output block
+	variable blck
+	resource block
+	data block - datasource
+	provider block
+	module
+	
+terraform log file how can we get ?
+	default logging is disabled
+	tf_log variable if enabled, we will get terraform logs
+		we can write into a file or loglevel
+		
+how do you write code in a single file or ?
+	we used to write in module ?
+		I have written vpc module.
+			we generally use
+	
+	such module codes do you put in git ?
+		if so private or public?
+			we put it in our private repository for our internal purpose
+			
+How will take tf code from private repository ?
+	
+you can use publicly available terraform modules for vpc right ? why do you write ?
+	publicly available module only was used by our client previously 
+	but it contains unnecessary code sometimes which is not needed for our client
+	so only we created a module as per the client need and in such a way client's developers also could understand 
+	
+wat files under modules ?
+	tf vars
+	output files
+	variable files
+	while calling module, we can pass variables to it
+	get output, in the module block, we can define outputs to be received
+	
+Terraform s3 state file and state locking
+==========================================
+create s3 bucket with versioning enabled 
+create a dynamodb table with default settings - Partition key as LockID - string
+create terraform backend like below in provider.tf
+
+
+terraform {
+  backend "s3" {
+    bucket = "zomato-infra-tfstate.chandika.tech"
+    dynamodb_table = "terraform-state-lock-dynamo"
+    key    = "terraform.tfstate"
+    region = "ap-south-1"
+  }
+}
+
+$ terraform init
+
+
+https://www.linkedin.com/pulse/terraform-backend-using-s3-dynamodb-state-locking-sanjeewa-silva/
+https://quileswest.medium.com/how-to-lock-terraform-state-with-s3-bucket-in-dynamodb-3ba7c4e637
+https://www.linkedin.com/pulse/terraform-state-remote-storage-s3-locking-dynamodb-oramu-/
+
+$ terraform apply
+╷
+│ Error: Error acquiring the state lock
+│
+│ Error message: ConditionalCheckFailedException: The conditional request failed
+│ Lock Info:
+│   ID:        b751ae61-4ca4-8dff-4d87-5eaa3b13fc6e
+│   Path:      zomato-infra-tfstate.chandika.tech/terraform.tfstate
+│   Operation: OperationTypeApply
+│   Who:       ec2-user@admin.ap-south-1.compute.internal
+│   Version:   1.5.7
+│   Created:   2023-10-13 11:55:24.468559571 +0000 UTC
+│   Info:
+│
+│
+│ Terraform acquires a state lock to protect the state from being written
+│ by multiple users at the same time. Please resolve the issue above and try
+│ again. For most commands, you can disable locking with the "-lock=false"
+│ flag, but this is not recommended.
+
+$ check dynamodb table. there is one item in LockID
+
+============
+	
+have you used terraform template ?
+	i have heard about it 
+	wordpress example
+		we created vpc, instances, lamp stack installaiton in it 
+		wp-config file we have put in a template and given
+	
+tfstate and tfstate.backup ?
+		resource details of the project in tfstate
+		the state of previous apply is in tfstate.backup
+		
+
+terraform versions how do you manage ?
+	provider version we can mention terraform version
+		provider level also we can set versions
+	
+1)	tfswitch - multiple versions we can manage
+curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash
+or 
+
+$ wget https://github.com/warrensbox/terraform-switcher/archive/refs/tags/0.13.1308.zip
+$ unzip 0.13.1308.zip
+$ sudo ./install.sh
+warrensbox/terraform-switcher info checking GitHub for latest tag
+warrensbox/terraform-switcher info found version: 0.13.1308 for 0.13.1308/linux/amd64
+warrensbox/terraform-switcher info installed /usr/local/bin/tfswitch
+$ $ tfswitch -l ---- list all versions. select from it
+[ec2-user@admin terraform-switcher-0.13.1308]$ tfswitch -l
+✔ 1.5.6
+Installing terraform at /home/ec2-user/bin
+Downloading to: /home/ec2-user/.terraform.versions
+21020690 bytes downloaded
+Switched terraform to version "1.5.6"
+[ec2-user@admin terraform-switcher-0.13.1308]$ terraform version
+Terraform v1.5.6
+on linux_amd64
+$ tfswitch --default 1.2.4
+$ tfswitch -u ----> shows latest stable
+Installing terraform at /home/ec2-user/bin
+Switched terraform to version "1.6.1"
+
+
+2)	tfenv - command 
+$ git clone --depth=1 https://github.com/tfutils/tfenv.git ~/.tfenv
+$ echo 'export PATH="$HOME/.tfenv/bin:$PATH"' >> ~/.bash_profile
+$ sudo ln -s ~/.tfenv/bin/* /usr/local/bin
+$ tfenv install 0.7.0
+Installing Terraform v0.7.0
+Downloading release tarball from https://releases.hashicorp.com/terraform/0.7.0/terraform_0.7.0_linux_amd64.zip
+############################################################################################################################################################### 100.0%
+Downloading SHA hash file from https://releases.hashicorp.com/terraform/0.7.0/terraform_0.7.0_SHA256SUMS
+Not instructed to use Local PGP (/home/ec2-user/.tfenv/use-{gpgv,gnupg}) & No keybase install found, skipping OpenPGP signature verification
+terraform_0.7.0_linux_amd64.zip: OK
+Archive:  /tmp/tfenv_download.tGIBLg/terraform_0.7.0_linux_amd64.zip
+  inflating: /home/ec2-user/.tfenv/versions/0.7.0/terraform
+Installation of terraform v0.7.0 successful. To make this your default version, run 'tfenv use 0.7.0'
+$ tfenv use 0.7.0
+Switching default version to v0.7.0
+Default version (when not overridden by .terraform-version or TFENV_TERRAFORM_VERSION) is now: 0.7.0
+
+	
+how do you recreate a resource ?
+	taint - can use one issue is while one person tainted a resource, another person's apply would recreate the tainted resource also
+	--replace while apply or plan
+	taint is deprecated. latest terrafomr versions use replace
+	
+terraform state refreshing ?
+	the present state of aws resources vs terraform desired configuration is kept in the terraform memory. once terraform refresh cmd is done, current aws state is written to the terraform tf state file
+	
+	terraform refresh
+	terraform apply -refresh-only -auto-approve	----noprompt
+	terraform apply -refresh-only ---- prompt
+	all can use to refresh state file as per the aws infra current state
+	
+terraform refresh
+
+	eg : one instance created with output set to public ip pf the instance
+		someone stopped and started the instance in console, public ip changed
+		output still shows old public ip as it retrieves info from tfstate file
+		once terraform apply or plan done, crrent state is kept in the memory
+		terraform refresh - stores the current aws state into tfstate and output will show the current ip
+	
+how to destroy one resource alone ?
+	terraform destroy 
+	
+have you set lifecycle policy ?
+	create before destroy set for security group as its not possible to keep an instanc ewithout security group
+	security group set with name as sometimes id would be recreated
+	
+	2. ignore_changes 
+		during our testing, when some tags are edited and changed via in the console. terraform usually ignore the changes and set as per the desired configuration
+		in that case, we can tell terraform to ignore the changes done to tags 
+		
+	3. prevent destroy -- terraform prevent destroying the resource object
+	
+	4. replace_triggered_by --replace the resources if the referenced item change
+	
+import cmd
+	tell one example. existing resources in aws, importing into terraform to manage the resource further via terraform
+	how to import
+		same resource definition - prepare
+		add it in main.tf 
+		terraform import aws_instance.newinstance instanceid
+	
+	to remove one instance from state list without removing the physical resource
+		terraform state rm aws_instance.newinstance
+
+$ terraform import aws_instance.webserver2 i-0652e7f43b4e4a785
+aws_instance.webserver2: Importing from ID "i-0652e7f43b4e4a785"...
+aws_instance.webserver2: Import prepared!
+  Prepared aws_instance for import
+aws_instance.webserver2: Refreshing state... [id=i-0652e7f43b4e4a785]
+
+Import successful!
+
+The resources that were imported are shown above. These resources are now in
+your Terraform state and will henceforth be managed by Terraform.
+
+[ec2-user@admin terraform_ec2]$ terraform state list
+aws_instance.webserver2
+[ec2-user@admin terraform_ec2]$ terraform state rm aws_instance.webserver2
+Removed aws_instance.webserver2
+Successfully removed 1 resource instance(s).
+
+
+you have created a resource thru terraform and done changes or deleted it in console, what happens ? instance would be recreated as per resourceconfiguration in terraform
+
+
+conditional resource creation
+	if else block can use, can also use count 
+		tell one eg with if else syntax: 
+			vpc module, we need nat gateway or not 
+eg:			
+resource "aws_eip" "eip" {
+count = var.enable_nat_gw == true ? 1 : 0
+			
+diff between count =1 and count 
+		count =1create a list 
+	
+diff between count and for-each
+	count - array stored details, if count = 2, 2 identical resources are created
+	for-each - map stored details, in for_each, we can give unique values to each arguments such as differnt amis, different keys etc. if for_each is given as map, each.key or each.value.ami
+	
+	count with ports
+	for-each with ports
+	
+terraform for loop ?
+	used for data manipulation
+		iam users name to captial letters 
+		
+terraform thru how many resources you have created how to see ?
+	terraform state list
+
+delete one resource
+	terraform destroy --delete
+	
+	
+when terraform init to be executed ?
+	when installing provider - null provider, tls provider
+	when installing modules	- modules can be from local, github, terraform registry
+	
+
+Is it possible to provider update ?
+	terraform init -upgrade > 	provider will upgrade
+	$ terraform init --upgrade
+
+	
+how to update/upgrade module 
+	terraform get-update
+	
+terraform version to chck the version
+
+multiple terraform versions 
+	tfenv or tfswitch
+	https://opensource.com/article/20/11/tfenv
+	
+
+How do you provide secrets to terraform like access_key nd secret key ?
+	we work on terraform from EC2 instance >> IAM role with permissions of resources required 
+	
+
+How variable interpolation used ?
+	"${}"
+	eg: user-mybucket
+	
+
+can you tell example for template ?
+	add bucket policy to bucket to make it public
+	so bucket policy can be set as template
+		
+eg using template
+==============
+$ cat main.tf
+variable "bucket-name" {
+  default = "test-chandika-tech"
+}
+
+resource "aws_s3_bucket" "test-chandika-tech" {
+  bucket = var.bucket-name
+
+  tags = {
+    Name        = var.bucket-name
+    Environment = "Dev"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "block" {
+  bucket = aws_s3_bucket.test-chandika-tech.id
+
+  block_public_policy     = false
+  restrict_public_buckets = false
+}
+
+data "template_file" "policy" {
+  template = file("ipolcy.tpl")
+  vars = {
+    resource_arn = "${aws_s3_bucket.test-chandika-tech.arn}"
+  }
+}
+
+
+output "test" {
+  value = data.template_file.policy.rendered
+}
+
+resource "aws_s3_bucket_policy" "public-policy" {
+  bucket = aws_s3_bucket.test-chandika-tech.id
+  policy = data.template_file.policy.rendered
+}
+
+$ cat policy.tpl
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+        "Sid": "AllowGetObject",
+        "Principal":  "*",
+        "Effect": "Allow",
+        "Action": "s3:GetObject",
+        "Resource": "${resource_arn}/*"
+    }
+]
+}
+
+
+where do you use datasource >
+	to search AMIs
+	to search security group ids
+	to search route53 zone
+	
+	
+multiple projects how to manage with one terraform ?
+	1. terraform workspace
+	2. multiple directories
+	
+	if any worksapce or tfvars changed, so we mostly use directories. But suitable in cases where infra for 3 environments would be created using workspace by giving the tfvars alone along with terraform commands
+	
+workspace vs other ways difference ?
+
+
+workspace list, create, delete, change to another work space - select
+
+if s3 backend used, terraform state files are put into s3 buckets
+
+terraform workflow
+	terraform init
+	terraform validate
+	terraform plan
+	terraform apply
+	terraform destroy
+	
+why terraform statefile is used?
+
+Which location statefile created
+	in the project location
+	
+terraform statelocking using dynamodb
+	backend s3 
+		
+		
+loop constructs in terraform 
+	count - whole number, which output as a list
+	for_each
+	
+terraform import
+	instance created vis aws console
+	managing in terrraform
+	create empty resource with mandate arg in main.tf
+	terraform import localsrcname instanceid
+	statefile is udated now
+	then add vi main.tf - config of that instance
+	terraform plan - no changes should come
+	
+	
+what are modules in terraform and types of modules ?
+
+hwo to take action if you lose tfstate file ?

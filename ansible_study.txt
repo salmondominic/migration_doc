@@ -1,0 +1,19 @@
+ansible_study
+++++++++++++++
+
+$ansible configuration
+default path >> /etc/ansible/ansible.cfg 
+we can use custom configuration path, if we have multiple configuration file, then list the same by using the command
+#ansible-config list
+
+#ansible-config view  >> to view the current ansible configuration
+
+#ansible-config dump >> to show currently configured env variable
+
+----------------------
+
+YAML 
+saLmonqazxsw123#@!
+
+
+

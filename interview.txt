@@ -1,0 +1,231 @@
+Github
+-----------------
+https://bitbucket.org/cloud-study/workspace/overview/
+git HEAD >> current working area & also its pointing to latest commit 
+git branch >> it is an isolated area where we can make our own changes to to respective repo 
+git branch -d branchname >> delete branch
+git push origin -d branchname 
+
+pull request >> it is a standard way to make our changes from feacture branch to master branch
+git checkout -b branchname >> to create and checkout to new branch
+git status >> to check the current branch and commits 
+git log >> to see the recent commits 
+git fetch >> only download the latest change 
+git pull >> will download all from remote repo 
+
+git rest >> to cleanup the changes on index & local area 
+--hard  to remove from both index & local area 
+--soft to remove the latest changes from local area 
+
+git tag >> to tag a specific commit as version, we can use tag 
+git tag v1.0
+git puh origin v1.0
+git tag v1.0 commitID
+git push origin branch v1.0 >> to tag a custom branch 
+
+issues faced in git 
+salmon@DESKTOP-9KOJOUG:~/salm/migration_doc$ git push origin main
+Username for 'https://github.com': salmondominic
+Password for 'https://salmondominic@github.com':
+remote: Support for password authentication was removed on August 13, 2021.
+remote: Please see https://docs.github.com/get-started/getting-started-with-git/about-remote-repositories#cloning-with-https-urls for information on currently recommended modes of authentication.
+fatal: Authentication failed for 'https://github.com/salmondominic/migration_doc.git/'
+
+added SSH key and tried the following command to push 
+git push git@github.com:salmondominic/migration_doc.git main
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+prometheus
+--------------
+prometheus >> pull mechanisam >> scrapes the metrics data from the targets/nodes 
+types of prometheus
+
+to scrapes the metrics data from the targets nodes & pods 
+types:
+counter >> this metrics data value is constently increase over the time period, 
+used to get the total amount of the somthing like requests by webserver
+gauge >> this metrics data value is also a numeric one & value will be up & down. 
+used to identify the CPU & disk usage related metrics
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+docker 
+----------------
+Its Containerization tool. we can easly deploy our application 
+docker image: it specify the group of configuration & commands that we rquired to build our application
+docker container: it is a run time instance of docker image
+docker network: to establist the connection b/w to different container
+docker system prune  >> to remove unused images, stopped container & unused network
+
+Dockerfile:
+FROM: to specify the base image 
+RUN: to execute the commands
+COPY: to copy a file or folder from host system to container
+ADD: is also similar as COPY, additionally we can download the file by using remote URL
+WORKDIR: we can set working directory
+CMD: Can use executable command in it, its overwritten & we can overwritten when we docker run command by passing as argument 
+ENTRYPOINT: same as CMD, but we can't overwritten
+
+docker build -t imagename .
+docker run -it -d --network test -p 2024:3306 -e MYSQL_ROOT_PASSWORD="qazwwqq" --name dbserver mysql:latest 
+docker network create --drive=bridge --subnet=xxxx/24 --gateway=xxxx/24 test 
+
+docker-compose: it is a tool to deploy & manage multiple services as a single application
+We use YAML file to define the configuration for this
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Jenkins
+------------
+Shared libraries : we can re-use the code/script across multiple jobs using libraries
+scripted pipeline:
+declarative pipeline: 
+
+pipeline syntax & snippet generator: 
+
+nodes:
+multi-branch pipeline
+
+what is CICD pipeline
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+kubernetes
+---------------
+
+k8s >>
+it is a container orchestration tool.
+
+why we use k8s: 
+Main advantage for using k8s is optimize the resource utilzation & enchancing the reliability our application
+It automaticly scaling our application is up & down as per our demand and
+self-healing which helps to ensure our application remained highly available and resilient to failure 
+Also it helps to automate the deployment and managment of containerized application
+
+Also we are using declarative configuration mode of kubernetes, so we can define the application in YAML file. 
+which will make it easy to manage & update our infrastructure as code 
+
+k8s component:
+API server >> to establish the communication across whole k8s cluster. API server, expose APIs and user can intract with this apis using 
+command-line utility kubectl or k8s UI 
+
+scheduler >> to schedule pods across nodes 
+
+control manager (kube control) >> will run monitoring on cluster and it handling node failure & replicating components
+ETCD >> its key value datastore and it store the configuration details for k8s cluster
+
+-------------
+k8s resources:
+namespaces >> its an isolated environment in k8s cluster, we can use this for seperate env like testing, develop & production
+deployment >> it describe the lifecycle of an application. it define the desired number of pods that required 
+and its ensure that all the desired pods are running & available on all the time 
+
+replicaset >> its an underlying mechanisam used on deployment. its esure the specified number of pods replica running on all time 
+replicaset will continusly monitoring the desired state of pods
+and it will automatically delete & create the pods as per defined replica count 
+
+pod  >> its small deployable object in k8s. its consist one or more container and that share the storage resource. simply says that
+its an single instance of an application
+
+statefulset >> its used to manage the statful application like database application. means its required storage persistant & unique network 
+identifier 
+
+daemonset >> it use, when we want to deploy at least one pods on each nodes, then we can use daemonset
+its mainly used to deploy the monitoring agent & loggin agent like prometheus and fluentd
+
+-------------
+types of probe:
+probe mechanisam is used to determine the health and readiness of the container inside the pods 
+liveness probe >> this will ensure the application running conatiner is responsive and healthy. 
+if liveness probe is failed, k8s will try to restart the container.
+
+readiness probe >> this is used to determine when the container is ready to receive traffic. if readiness failed, 
+it wont get any request from the service.
+
+startup probe >> functionally same as readiness.. but this will only checkup when the container initiating.
+-------------
+
+
+taints and tolerations K8s
+types of services node port service like 
+how many nodeaffinities
+
+pod affinity >> colocating same application pods across each different nodes
+
+k8s troubleshooting
+ingress controller >> ingress >> service >> deployment >> pods
+
+pv & pvc
+
+clusterIP
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+terraform
+----------
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Openshift
+--------------
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+elasticsearch
+--------------
+
+elasticsearch >> command to check the cluster health 
+shard allocation
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Ansible
+---------
+Ansible command
+modules
+register & debug 
+copying or saving an output of a task to variable that is registering 
+debug is echo command in python >> to printed the output mean any chan
+handler
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+kafka
+---------
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+====
+
+From mindcurv, I am one of the team member in our main two clients.
+We have an ecommerce website & it mainly for the Food & Non-Food types of services
+Actually, we are managing the infrastructure for that ecommerce platform
+We have both Cloud & On-premise environment. We are using Google Cloud as cloud platform. 
+For Containerization, we are using kubernetes & docker
+For the deployment purpose, We use Jenkins and For K8s deployment, through Argocd
+we are maintaining our services as infrastructure as a code method by using the Ansible and using Git/bitbucket for manage this code.
+For logs management by using elasticsearch. Logstash agent used to fetch the data and Kibana tool to vizualize the real time data
+For monitoring, we are using Nagios & For Cloud Monitoring using Prometheus tool and its integrated with Alertmanager tool 
+And using Opsgenine, we have monitoring the alerts & it integrated with Slack to get notified the alerts 
+
+
+challenging issues
+Openshift router default pods deletion
+Pintproble impliment
+Mainly doing the upgradation of Cloud component & Kernel patching 
+
+For upgrade, First we should go through the latest versions and its documentation. 
+Validate if there any breaking changes or compactibility in the latest version with current configuration,
+ If there, we should also prepare the corresponding configuration changes too with this upgrade 
+as a best practice, we should test this latest version locally 
+and validate docker container is up & healthy with provided version 
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+challenging task
+
+apps of apps is a pattern which helps to create an individual argocd application for specified microservices under the namespaces 
+
+installing applicationset controller using kustomization 
+Defined application object resouces, from there we can define the repoURL and other spec & template like destination & metadata details 
+>> to buld all as a new application
+
